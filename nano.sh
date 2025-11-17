@@ -633,13 +633,23 @@ EOF
     fi
     
     # Activate virtual environment and install packages
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-        # Windows
-        source .venv/Scripts/activate
-    else
-        # Linux/Mac
-        source .venv/bin/activate
-    fi
+        if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+            # Windows
+            if [ -f ".venv/Scripts/activate" ]; then
+                source .venv/Scripts/activate
+            else
+                print_error "Windows virtual environment activation script not found"
+                exit 1
+            fi
+        else
+            # Linux/Mac
+            if [ -f ".venv/bin/activate" ]; then
+                source .venv/bin/activate
+            else
+                print_error "Linux/Mac virtual environment activation script not found"
+                exit 1
+            fi
+        fi
     
     # Upgrade pip
     python -m pip install --upgrade pip
