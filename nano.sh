@@ -42,17 +42,50 @@ setup_project() {
     print_header
     echo ""
     
-    # Check if running on Windows (including Git Bash, WSL, or Command Prompt)
-    # Use alternative method to detect Windows since OSTYPE might not be reliable in all environments
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
-        print_step "Detected Windows OS"
-        # For Windows, we'll use Python from PATH
-        PYTHON_CMD="python"
-        PIP_CMD="pip"
+    # Enhanced OS detection for cross-platform compatibility
+    DETECTED_OS="unknown"
+    
+    # Check various indicators for Windows
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* || "$OSTYPE" == *cygwin* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ] || [ -n "$WINDIR" ]; then
+        DETECTED_OS="windows"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        DETECTED_OS="macos"
+    elif [[ "$OSTYPE" == "linux"* ]] || [ -n "$WSL_DISTRO_NAME" ]; then
+        DETECTED_OS="linux"
     else
-        PYTHON_CMD="python3"
-        PIP_CMD="pip3"
+        # Additional check for WSL
+        if [ -e /proc/version ] && grep -qi microsoft /proc/version; then
+            DETECTED_OS="wsl"
+        elif [ -e /proc/version ] && grep -qi microsoft /proc/version 2>/dev/null; then
+            DETECTED_OS="wsl"
+        else
+            # Default to checking for common Linux indicators
+            DETECTED_OS="linux"
+        fi
     fi
+    
+    case $DETECTED_OS in
+        windows|wsl)
+            print_step "Detected Windows/WSL Environment"
+            PYTHON_CMD="python"
+            PIP_CMD="pip"
+            ;;
+        macos)
+            print_step "Detected macOS Environment"
+            PYTHON_CMD="python3"
+            PIP_CMD="pip3"
+            ;;
+        linux)
+            print_step "Detected Linux Environment"
+            PYTHON_CMD="python3"
+            PIP_CMD="pip3"
+            ;;
+        *)
+            print_step "Could not detect OS, defaulting to Linux/Unix conventions"
+            PYTHON_CMD="python3"
+            PIP_CMD="pip3"
+            ;;
+    esac
     
     # Check if Python is installed
     if ! command_exists $PYTHON_CMD && ! command_exists "${PYTHON_CMD}.exe"; then
@@ -60,15 +93,15 @@ setup_project() {
         exit 1
     fi
     
-    # Update PYTHON_CMD to include .exe extension if needed
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
+    # Update PYTHON_CMD to include .exe extension if needed for Windows environments
+    if [[ "$DETECTED_OS" == "windows" || "$DETECTED_OS" == "wsl" ]]; then
         if ! command_exists $PYTHON_CMD && command_exists "${PYTHON_CMD}.exe"; then
             PYTHON_CMD="${PYTHON_CMD}.exe"
         fi
     fi
     
     # Check Python version
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
+    if [[ "$DETECTED_OS" == "windows" || "$DETECTED_OS" == "wsl" ]]; then
         # For Windows environments, use python.exe if python command is not found
         if ! command_exists $PYTHON_CMD && command_exists "${PYTHON_CMD}.exe"; then
             PYTHON_VERSION=$($PYTHON_CMD.exe --version 2>&1 | cut -d' ' -f2)
@@ -650,12 +683,22 @@ EOF
     fi
     
     # Activate virtual environment and install packages
-        if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
-            # Windows
+        if [[ "$DETECTED_OS" == "windows" ]]; then
+            # Windows Command Prompt/CMD or native Windows
             if [ -f ".venv/Scripts/activate" ]; then
                 source .venv/Scripts/activate
             else
                 print_error "Windows virtual environment activation script not found"
+                exit 1
+            fi
+        elif [[ "$DETECTED_OS" == "wsl" ]]; then
+            # Windows Subsystem for Linux - might use Windows Python but Linux paths
+            if [ -f ".venv/Scripts/activate" ]; then
+                source .venv/Scripts/activate
+            elif [ -f ".venv/bin/activate" ]; then
+                source .venv/bin/activate
+            else
+                print_error "WSL virtual environment activation script not found"
                 exit 1
             fi
         else
