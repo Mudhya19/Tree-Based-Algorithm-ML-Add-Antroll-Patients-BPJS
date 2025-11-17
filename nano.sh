@@ -42,8 +42,9 @@ setup_project() {
     print_header
     echo ""
     
-    # Check if running on Windows Subsystem for Linux or native Linux
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    # Check if running on Windows (including Git Bash, WSL, or Command Prompt)
+    # Use alternative method to detect Windows since OSTYPE might not be reliable in all environments
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
         print_step "Detected Windows OS"
         # For Windows, we'll use Python from PATH
         PYTHON_CMD="python"
@@ -54,13 +55,29 @@ setup_project() {
     fi
     
     # Check if Python is installed
-    if ! command_exists $PYTHON_CMD; then
+    if ! command_exists $PYTHON_CMD && ! command_exists "${PYTHON_CMD}.exe"; then
         print_error "Python is not installed. Please install Python 3.8 or higher."
         exit 1
     fi
     
+    # Update PYTHON_CMD to include .exe extension if needed
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
+        if ! command_exists $PYTHON_CMD && command_exists "${PYTHON_CMD}.exe"; then
+            PYTHON_CMD="${PYTHON_CMD}.exe"
+        fi
+    fi
+    
     # Check Python version
-    PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | cut -d' ' -f2)
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
+        # For Windows environments, use python.exe if python command is not found
+        if ! command_exists $PYTHON_CMD && command_exists "${PYTHON_CMD}.exe"; then
+            PYTHON_VERSION=$($PYTHON_CMD.exe --version 2>&1 | cut -d' ' -f2)
+        else
+            PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | cut -d' ' -f2)
+        fi
+    else
+        PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | cut -d' ' -f2)
+    fi
     echo "Python version: $PYTHON_VERSION"
     
     # Check if version is 3.8 or higher
@@ -72,7 +89,7 @@ setup_project() {
     fi
     
     # Check if pip is installed
-    if ! command_exists $PIP_CMD; then
+    if ! command_exists $PIP_CMD && ! command_exists "${PIP_CMD}.exe" && ! $PYTHON_CMD -m pip --version >/dev/null 2>&1; then
         print_error "pip is not installed. Please install pip."
         exit 1
     fi
@@ -633,7 +650,7 @@ EOF
     fi
     
     # Activate virtual environment and install packages
-        if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+        if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == *win* || "$OSTYPE" == *mingw* ]] || command -v python.exe >/dev/null 2>&1 || [ -d "/c/Windows" ]; then
             # Windows
             if [ -f ".venv/Scripts/activate" ]; then
                 source .venv/Scripts/activate
@@ -652,11 +669,11 @@ EOF
         fi
     
     # Upgrade pip
-    python -m pip install --upgrade pip
+    $PYTHON_CMD -m pip install --upgrade pip
     
     # Install packages from requirements.txt
     if [ -f "requirements.txt" ]; then
-        pip install -r requirements.txt
+        $PYTHON_CMD -m pip install -r requirements.txt
         print_success "Installed packages from requirements.txt"
     else
         print_error "requirements.txt not found"
