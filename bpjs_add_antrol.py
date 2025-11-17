@@ -2,6 +2,15 @@
 BPJS Antrol Patients Analysis
 This script performs machine learning analysis on BPJS antrol patients data
 using tree-based algorithms to predict patient outcomes or patterns.
+Proyek Klasifikasi (Supervised Learning)
+Tujuan: "Analisis Komperenshif Identifikasi Pendaftaran Pasien BPJS Add Antroll"
+Kasus: Analisis Klasifikasi Pasien BPJS Add Antrol
+
+Persyaratan Proyek:
+- Definisi Masalah: Membantu manajemen rumah sakit memahami pola pendaftaran pasien BPJS
+  dan memprediksi jenis pembayaran atau status kunjungan pasien berdasarkan data pendaftaran.
+- Kompleksitas Dataset: Dataset yang diproses memiliki campuran fitur numerik dan kategorikal
+  serta menunjukkan proses preprocessing yang kompleks.
 """
 import pandas as pd
 import numpy as np
@@ -153,11 +162,13 @@ def preprocess_data(df):
     return X, y, label_encoders, target_encoder
 
 def train_tree_models(X_train, y_train):
-    """Train tree-based models as specified in the requirements"""
+    """Train tree-based models as specified in the requirements:
+    Klasifikasi: Tree-Based Algorithm menggunakan model Machine Learning
+    (Decision Tree, Random Forest dan Gradient Boosting)"""
     models = {
-        'Decision Tree': DecisionTreeClassifier(random_state=42),
-        'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42),
-        'Gradient Boosting': GradientBoostingClassifier(random_state=42)
+        'Decision Tree': DecisionTreeClassifier(random_state=42, max_depth=10),
+        'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10),
+        'Gradient Boosting': GradientBoostingClassifier(random_state=42, n_estimators=100, max_depth=5)
     }
     
     trained_models = {}
@@ -257,8 +268,18 @@ def save_model(model, model_name, label_encoders, target_encoder, scaler=None):
         logger.info(f"Saved scaler to {scaler_path}")
 
 def main():
-    """Main function to run the BPJS antrol analysis"""
+    """Main function to run the BPJS antrol analysis
+    This function implements the complete machine learning pipeline as per the requirements:
+    1. Definisi Masalah & Pemuatan Data
+    2. Eksplorasi Data (EDA)
+    3. Data Preparation & Preprocessing
+    4. Pelatihan Model
+    5. Evaluasi Model
+    6. Simpan Model
+    """
     logger.info("Starting BPJS antrol analysis...")
+    logger.info("Problem Definition: Analyzing BPJS patient registration patterns to predict payment type or visit status")
+    logger.info("Business Goal: Help hospital management understand BPJS registration patterns and optimize resource allocation")
     
     # Load data with database fallback to CSV
     try:
@@ -266,6 +287,13 @@ def main():
     except FileNotFoundError as e:
         logger.error(f"Data loading failed: {e}")
         return
+    
+    logger.info(f"Dataset loaded with shape: {df.shape}")
+    logger.info(f"Dataset columns: {list(df.columns)}")
+    
+    # Perform initial EDA
+    logger.info("Performing initial Exploratory Data Analysis...")
+    perform_initial_eda(df)
     
     # Preprocess data
     X, y, label_encoders, target_encoder = preprocess_data(df)
@@ -290,6 +318,18 @@ def main():
     
     logger.info(f"Best model: {best_model_name} with F1-Score: {results[best_model_name]['f1_score']:.4f}")
     
+    # Perform feature importance analysis for the best model
+    if hasattr(best_model, 'feature_importances_'):
+        logger.info("Performing feature importance analysis...")
+        feature_names = X.columns
+        importances = best_model.feature_importances_
+        indices = np.argsort(importances)[::-1]
+        
+        logger.info("Top 10 most important features:")
+        for i in range(min(10, len(feature_names))):
+            idx = indices[i]
+            logger.info(f"{i+1}. {feature_names[idx]}: {importances[idx]:.4f}")
+    
     # Save the best model
     save_model(best_model, best_model_name, label_encoders, target_encoder, scaler)
     
@@ -301,6 +341,36 @@ def main():
     print(f"\nBest performing model: {best_model_name}")
     print(f"F1-Score: {results[best_model_name]['f1_score']:.4f}")
     print(f"Accuracy: {results[best_model_name]['accuracy']:.4f}")
+    print(f"Precision: {results[best_model_name]['precision']:.4f}")
+    print(f"Recall: {results[best_model_name]['recall']:.4f}")
+
+
+def perform_initial_eda(df):
+    """Perform initial Exploratory Data Analysis"""
+    logger.info("Initial EDA - Basic dataset information:")
+    logger.info(f"Dataset shape: {df.shape}")
+    logger.info(f"Dataset info: {df.info(show_counts=True)}")
+    
+    # Summary statistics
+    logger.info("Numerical columns summary:")
+    numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    if numerical_cols:
+        logger.info(f"\n{df[numerical_cols].describe()}")
+    
+    # Categorical columns summary
+    logger.info("Categorical columns summary:")
+    categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
+    for col in categorical_cols[:5]:  # Limit to first 5 categorical columns
+        logger.info(f"\nValue counts for {col}:")
+        logger.info(f"{df[col].value_counts().head()}")
+    
+    # Check for missing values
+    missing_data = df.isnull().sum()
+    missing_data = missing_data[missing_data > 0]
+    if not missing_data.empty:
+        logger.info(f"Columns with missing values:\n{missing_data}")
+    else:
+        logger.info("No missing values found in the dataset")
 
 if __name__ == "__main__":
     main()
