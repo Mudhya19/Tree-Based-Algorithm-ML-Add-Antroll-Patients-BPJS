@@ -154,13 +154,52 @@ def preprocess_data(df):
             X[col] = le.fit_transform(X[col].astype(str))
             label_encoders[col] = le
     
-    # Create target variable - for this example, we'll predict payment method (png_jawab)
-    if 'png_jawab' in df.columns:
+    # Create target variable - based on the NOTES NOTEBOOK.md, we should focus on
+    # analyzing success/failure of registration (status_kirim) to identify patterns
+    # in APM and Mobile JKN channels
+    if 'status_kirim' in df.columns:
+        target_encoder = LabelEncoder()
+        y = target_encoder.fit_transform(df['status_kirim'].astype(str))
+        logger.info(f"Created target variable from 'status_kirim' with {len(target_encoder.classes_)} classes: {target_encoder.classes_}")
+        
+        # Remove the target column from feature_columns if it's in the list
+        if 'status_kirim' in feature_columns:
+            feature_columns.remove('status_kirim')
+            logger.info("Removed 'status_kirim' from features to prevent data leakage")
+            
+        # Rebuild X with the corrected feature list
+        X = df[feature_columns].copy()
+        
+        # Re-encode categorical variables after rebuilding X
+        label_encoders = {}
+        for col in X.columns:
+            if pd.api.types.is_object_dtype(X[col]):
+                le = LabelEncoder()
+                X[col] = le.fit_transform(X[col].astype(str))
+                label_encoders[col] = le
+    elif 'png_jawab' in df.columns:
+        # Fallback to payment method if status_kirim is not available
         target_encoder = LabelEncoder()
         y = target_encoder.fit_transform(df['png_jawab'].astype(str))
         logger.info(f"Created target variable from 'png_jawab' with {len(target_encoder.classes_)} classes: {target_encoder.classes_}")
+        
+        # Remove the target column from feature_columns if it's in the list
+        if 'png_jawab' in feature_columns:
+            feature_columns.remove('png_jawab')
+            logger.info("Removed 'png_jawab' from features to prevent data leakage")
+            
+        # Rebuild X with the corrected feature list
+        X = df[feature_columns].copy()
+        
+        # Re-encode categorical variables after rebuilding X
+        label_encoders = {}
+        for col in X.columns:
+            if pd.api.types.is_object_dtype(X[col]):
+                le = LabelEncoder()
+                X[col] = le.fit_transform(X[col].astype(str))
+                label_encoders[col] = le
     else:
-        # Create a default binary target if png_jawab is not available
+        # Create a default binary target if neither status_kirim nor png_jawab is available
         y = np.random.randint(0, 2, size=len(df))
         target_encoder = None
         logger.info("Created random binary target variable")
