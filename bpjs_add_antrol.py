@@ -19,7 +19,7 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix
-from database.database_connection import DatabaseConnection, get_bpjs_antrol_data
+from database.database_connection import get_bpjs_antrol_data
 from config.config import Config
 import os
 import logging
@@ -118,22 +118,32 @@ def preprocess_data(df):
         if df[col].isnull().sum() > 0:
             df[col].fillna(df[col].mode()[0] if not df[col].mode().empty else 'Unknown', inplace=True)
     
+    # Convert timedelta columns to seconds for scaling
+    timedelta_columns = df.select_dtypes(include=['timedelta64[ns]']).columns
+    for col in timedelta_columns:
+        df[col] = df[col].dt.total_seconds()
+    
     # Prepare features for modeling
-    # Select relevant features for modeling
+    # Select relevant features for modeling (excluding the target to prevent data leakage)
     feature_columns = []
     
     # Add numerical features
     feature_columns.extend([col for col in numerical_columns if col not in ['tahun_registrasi', 'tahun_periksa']])
     
-    # Add categorical features that are relevant
-    relevant_categorical = ['nm_poli', 'png_jawab', 'hari_registrasi', 'status_lanjut', 'jenis_kunjungan']
+    # Add categorical features that are relevant but not the target
+    relevant_categorical = ['nm_poli', 'hari_registrasi', 'status_lanjut', 'jenis_kunjungan', 'kd_dokter', 'kd_poli']
     for col in relevant_categorical:
-        if col in df.columns:
+        if col in df.columns and col != 'png_jawab':  # Exclude target variable from features
             feature_columns.append(col)
     
     logger.info(f"Selected {len(feature_columns)} features for modeling: {feature_columns}")
     
     # Prepare X (features) and y (target)
+    # Remove target variable from features if it's in the feature list to prevent data leakage
+    if 'png_jawab' in feature_columns:
+        feature_columns.remove('png_jawab')
+        logger.info("Removed 'png_jawab' from features to prevent data leakage")
+    
     X = df[feature_columns].copy()
     
     # Encode categorical variables
@@ -145,7 +155,6 @@ def preprocess_data(df):
             label_encoders[col] = le
     
     # Create target variable - for this example, we'll predict payment method (png_jawab)
-    # If png_jawab exists in the data, use it as target, otherwise create a default
     if 'png_jawab' in df.columns:
         target_encoder = LabelEncoder()
         y = target_encoder.fit_transform(df['png_jawab'].astype(str))
@@ -267,6 +276,32 @@ def save_model(model, model_name, label_encoders, target_encoder, scaler=None):
         joblib.dump(scaler, scaler_path)
         logger.info(f"Saved scaler to {scaler_path}")
 
+def perform_initial_eda(df):
+    """Perform initial Exploratory Data Analysis"""
+    logger.info("Initial EDA - Basic dataset information:")
+    logger.info(f"Dataset shape: {df.shape}")
+    
+    # Summary statistics
+    logger.info("Numerical columns summary:")
+    numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    if numerical_cols:
+        logger.info(f"\n{df[numerical_cols].describe()}")
+    
+    # Categorical columns summary
+    logger.info("Categorical columns summary:")
+    categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
+    for col in categorical_cols[:5]:  # Limit to first 5 categorical columns
+        logger.info(f"\nValue counts for {col}:")
+        logger.info(f"{df[col].value_counts().head()}")
+    
+    # Check for missing values
+    missing_data = df.isnull().sum()
+    missing_data = missing_data[missing_data > 0]
+    if not missing_data.empty:
+        logger.info(f"Columns with missing values:\n{missing_data}")
+    else:
+        logger.info("No missing values found in the dataset")
+
 def main():
     """Main function to run the BPJS antrol analysis
     This function implements the complete machine learning pipeline as per the requirements:
@@ -298,8 +333,23 @@ def main():
     # Preprocess data
     X, y, label_encoders, target_encoder = preprocess_data(df)
     
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    # Split the data with stratification if possible
+    # Check if stratification is possible (each class has at least 2 samples)
+    unique, counts = np.unique(y, return_counts=True)
+    min_samples_per_class = min(counts)
+    
+    if min_samples_per_class >= 2:
+        # Stratification is possible
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+        print(f"Split performed with stratification. Minimum samples per class: {min_samples_per_class}")
+    else:
+        # Use stratification if possible, otherwise split without it
+        try:
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+        except ValueError:
+            # If stratification is not possible due to insufficient samples in a class, split without stratification
+            print("Stratified split not possible due to insufficient samples in a class. Splitting without stratification.")
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     # Scale features
     scaler = StandardScaler()
@@ -343,34 +393,6 @@ def main():
     print(f"Accuracy: {results[best_model_name]['accuracy']:.4f}")
     print(f"Precision: {results[best_model_name]['precision']:.4f}")
     print(f"Recall: {results[best_model_name]['recall']:.4f}")
-
-
-def perform_initial_eda(df):
-    """Perform initial Exploratory Data Analysis"""
-    logger.info("Initial EDA - Basic dataset information:")
-    logger.info(f"Dataset shape: {df.shape}")
-    logger.info(f"Dataset info: {df.info(show_counts=True)}")
-    
-    # Summary statistics
-    logger.info("Numerical columns summary:")
-    numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    if numerical_cols:
-        logger.info(f"\n{df[numerical_cols].describe()}")
-    
-    # Categorical columns summary
-    logger.info("Categorical columns summary:")
-    categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
-    for col in categorical_cols[:5]:  # Limit to first 5 categorical columns
-        logger.info(f"\nValue counts for {col}:")
-        logger.info(f"{df[col].value_counts().head()}")
-    
-    # Check for missing values
-    missing_data = df.isnull().sum()
-    missing_data = missing_data[missing_data > 0]
-    if not missing_data.empty:
-        logger.info(f"Columns with missing values:\n{missing_data}")
-    else:
-        logger.info("No missing values found in the dataset")
 
 if __name__ == "__main__":
     main()

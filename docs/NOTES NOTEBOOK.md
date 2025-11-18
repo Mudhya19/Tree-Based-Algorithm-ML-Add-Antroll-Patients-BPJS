@@ -108,7 +108,7 @@ dan bukan dataset "mainan" yang terlalu sederhana (seperti 'Iris' atau 'Titanic'
    scaler/encoder) ke dalam sebuah file. (Contoh: model_terbaik.pkl menggunakan
    pickle atau joblib).
 
-# buatkan notebook jupyter dengan nama bpjs_add_antrol.ipynb dalam folder notebooks dibawah ini berikan markdown berdasarkan 11 keterangan dibawah, karna saya ingin fokus source code lebih dulu dengan bpjs_add_antrol.py
+# buatkan notebook jupyter dengan nama bpjs_add_antrol.ipynb dalam folder notebooks dibawah ini berikan markdown berdasarkan 11 keterangan dibawah, karna ingin fokus source code lebih dulu dengan bpjs_add_antrol.py
 
 1. Understanding Business: Memahami kebutuhan bisnis dan tujuan analisis
 2. Data Understanding: Menjelajahi dan memahami struktur data
@@ -121,3 +121,13 @@ dan bukan dataset "mainan" yang terlalu sederhana (seperti 'Iris' atau 'Titanic'
 9. Evaluation Modeling : evaluasi model
 10. Save Model : menyimpan model terbaik
 11. Insight & Conclusion: Penarikan kesimpulan dan rekomendasi
+
+# permasalahan utama
+
+analisis pola keberhasilan dan kegagalan pendaftaran pasien BPJS
+melalui dua kanal yaitu Anjungan Pendaftaran Mandiri (APM) dan aplikasi Mobile JKN.
+Melalui pendekatan analisis log dan metode clustering dalam penerapan machine learning dengan menggunakan Tree-Based Algorithm : Decision Tree, Random Forest dan Gradient Boosting. bertujuan untuk mengidentifikasi
+faktor-faktor penyebab dan memberikan rekomendasi peningkatan efektivitas pelayanan
+digital rumah sakit. Secara tidak optimalnya proses pendaftaran pasien BPJS pada kanal APM
+dan Mobile JKN karena adanya variasi tingkat keberhasilan dan kegagalan pengiriman data
+(status_kirim) yang menunjukkan pola berbeda, namun belum dianalisis secara komprehensif
