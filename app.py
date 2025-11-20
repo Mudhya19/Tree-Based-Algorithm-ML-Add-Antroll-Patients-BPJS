@@ -154,7 +154,7 @@ with tab1:
 
     # Date-related inputs
     bulan_registrasi = st.sidebar.slider("Bulan Registrasi", min_value=1, max_value=12, value=datetime.now().month)
-    hari_registrasi = st.sidebar.slider("Hari Registrasi (0=Monday, 6=Sunday)", min_value=0, max_value=6, value=datetime.now().weekday())
+    hari_registrasi = st.sidebar.slider("Hari Registrasi (1=Monday, 6=Sunday)", min_value=1, max_value=6, value=datetime.now().weekday())
 
     # Create a dataframe with the input values
     input_data = pd.DataFrame({
