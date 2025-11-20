@@ -4,6 +4,9 @@ import numpy as np
 import joblib
 from datetime import datetime
 
+# Aplikasi ini dibuat untuk menganalisis dan memprediksi keberhasilan pendaftaran pasien BPJS
+# melalui kanal APM (Anjungan Pendaftaran Mandiri) dan Mobile JKN menggunakan algoritma Tree-Based
+
 # Set page configuration
 st.set_page_config(
     page_title="Aplication Tree-Based Algorithm ML Analysis Prediction for BPJS Antrol Patients",
@@ -26,7 +29,14 @@ with tab1:
         label_encoders = joblib.load('output/label_encoders.pkl')
         return model, scaler, label_encoders
 
-    model, scaler, label_encoders = load_model()
+    try:
+        model, scaler, label_encoders = load_model()
+    except FileNotFoundError:
+        st.error("File model tidak ditemukan. Pastikan file berikut telah diunggah: 'output/Gradient_Boosting_model.pkl', 'output/scaler.pkl', 'output/label_encoders.pkl'")
+        st.stop()
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat memuat model: {str(e)}")
+        st.stop()
 
     # Create sidebar for input
     st.sidebar.header("Input Parameters")
@@ -215,7 +225,14 @@ with tab2:
         return df
 
     # Load data
-    df = load_data()
+    try:
+        df = load_data()
+    except FileNotFoundError:
+        st.error("File dataset tidak ditemukan. Pastikan file 'bpjs antrol.csv' telah diunggah dengan benar.")
+        st.stop()
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat memuat dataset: {str(e)}")
+        st.stop()
     
     # Display basic info about the dataset
     st.subheader("Informasi Dataset")
