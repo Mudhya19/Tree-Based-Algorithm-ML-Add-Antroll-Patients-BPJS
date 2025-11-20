@@ -128,10 +128,10 @@ The project implements a robust data connection architecture with:
 
 ## Database Configuration
 The project is configured to connect to a MySQL database with the following default settings:
-- Host: 192.168.11.5
-- User: rsds_db
-- Password: rsdsD4t4b4s3
-- Database: rsds_db
+- Host: localhost
+- User: root
+- Password: password
+- Database: root
 - Port: 3306
 
 These can be modified in the `.env` file.
