@@ -24,9 +24,9 @@ with tab1:
     # Load model and preprocessing objects
     @st.cache_resource
     def load_model():
-        model = joblib.load('output/Gradient_Boosting_model.pkl')
-        scaler = joblib.load('output/scaler.pkl')
-        label_encoders = joblib.load('output/label_encoders.pkl')
+        model = joblib.load('Gradient_Boosting_model.pkl')
+        scaler = joblib.load('scaler.pkl')
+        label_encoders = joblib.load('label_encoders.pkl')
         return model, scaler, label_encoders
 
     try:
@@ -34,7 +34,7 @@ with tab1:
         model_loaded = True
     except FileNotFoundError:
         st.warning("File model tidak ditemukan. Fitur prediksi akan dinonaktifkan.")
-        st.info("Untuk menggunakan fitur prediksi, unggah file model ke folder 'output': 'Gradient_Boosting_model.pkl', 'output/scaler.pkl', 'output/label_encoders.pkl'")
+        st.info("Untuk menggunakan fitur prediksi, unggah file model ke folder 'output': 'Gradient_Boosting_model.pkl', 'scaler.pkl', 'label_encoders.pkl'")
         model_loaded = False
     except Exception as e:
         st.error(f"Terjadi kesalahan saat memuat model: {str(e)}")
