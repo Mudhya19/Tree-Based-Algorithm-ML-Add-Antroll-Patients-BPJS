@@ -60,12 +60,24 @@ mlite query logs :
 
 logic jikalau gagal dalam mengambil telah disediakan bpjs antrol.csv dalam folder database, buatkan path langsung dalam bpjs_add_antrol.py jika gagal terhubung ke database server
 
+saya sedang mengerjakan tugas UTS machine learning fokus pada file yang sudah ada saya buat dan paham intruksi dari tugas saya dibawah yang dicantumkan :
+
 Pilih SATU dari tiga jalur proyek machine learning berikut:
 Jalur : Proyek Klasifikasi (Supervised Learning)
 •
 Tujuan: “Analisis Komperenshif Identifikasi Pendaftaran Pasien BPJS Add Antroll
 •
 Kasus: Analisis Klasifikasi Pasien BPJS Add Antrol
+
+# permasalahan utama
+
+analisis pola keberhasilan dan kegagalan pendaftaran pasien BPJS
+melalui dua kanal yaitu Anjungan Pendaftaran Mandiri (APM) dan aplikasi Mobile JKN.
+Melalui pendekatan analisis log dan metode clustering dalam penerapan machine learning dengan menggunakan Tree-Based Algorithm : Decision Tree, Random Forest dan Gradient Boosting. bertujuan untuk mengidentifikasi
+faktor-faktor penyebab dan memberikan rekomendasi peningkatan efektivitas pelayanan
+digital rumah sakit. Secara tidak optimalnya proses pendaftaran pasien BPJS pada kanal APM
+dan Mobile JKN karena adanya variasi tingkat keberhasilan dan kegagalan pengiriman data
+(status_kirim) yang menunjukkan pola berbeda, namun belum dianalisis secara komprehensif
 
 Persyaratan Proyek
 •
@@ -122,12 +134,3 @@ dan bukan dataset "mainan" yang terlalu sederhana (seperti 'Iris' atau 'Titanic'
 10. Save Model : menyimpan model terbaik
 11. Insight & Conclusion: Penarikan kesimpulan dan rekomendasi
 
-# permasalahan utama
-
-analisis pola keberhasilan dan kegagalan pendaftaran pasien BPJS
-melalui dua kanal yaitu Anjungan Pendaftaran Mandiri (APM) dan aplikasi Mobile JKN.
-Melalui pendekatan analisis log dan metode clustering dalam penerapan machine learning dengan menggunakan Tree-Based Algorithm : Decision Tree, Random Forest dan Gradient Boosting. bertujuan untuk mengidentifikasi
-faktor-faktor penyebab dan memberikan rekomendasi peningkatan efektivitas pelayanan
-digital rumah sakit. Secara tidak optimalnya proses pendaftaran pasien BPJS pada kanal APM
-dan Mobile JKN karena adanya variasi tingkat keberhasilan dan kegagalan pengiriman data
-(status_kirim) yang menunjukkan pola berbeda, namun belum dianalisis secara komprehensif
