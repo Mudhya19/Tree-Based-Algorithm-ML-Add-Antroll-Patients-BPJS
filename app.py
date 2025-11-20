@@ -24,9 +24,65 @@ with tab1:
     # Load model and preprocessing objects
     @st.cache_resource
     def load_model():
-        model = joblib.load('./output/Gradient_Boosting_model.pkl')
-        scaler = joblib.load('./output/scaler.pkl')
-        label_encoders = joblib.load('./output/label_encoders.pkl')
+        import os
+        # Coba beberapa pendekatan untuk membaca file model
+        model_paths = [
+            './output/Gradient_Boosting_model.pkl',
+            'output/Gradient_Boosting_model.pkl',
+            './Gradient_Boosting_model.pkl',
+            'Gradient_Boosting_model.pkl'
+        ]
+        scaler_paths = [
+            './output/scaler.pkl',
+            'output/scaler.pkl',
+            './scaler.pkl',
+            'scaler.pkl'
+        ]
+        label_encoder_paths = [
+            './output/label_encoders.pkl',
+            'output/label_encoders.pkl',
+            './label_encoders.pkl',
+            'label_encoders.pkl'
+        ]
+        
+        model = None
+        scaler = None
+        label_encoders = None
+        
+        # Coba load model
+        for path in model_paths:
+            try:
+                if os.path.exists(path):
+                    model = joblib.load(path)
+                    break
+            except:
+                continue
+        
+        # Coba load scaler
+        for path in scaler_paths:
+            try:
+                if os.path.exists(path):
+                    scaler = joblib.load(path)
+                    break
+            except:
+                continue
+        
+        # Coba load label encoders
+        for path in label_encoder_paths:
+            try:
+                if os.path.exists(path):
+                    label_encoders = joblib.load(path)
+                    break
+            except:
+                continue
+        
+        if model is None or scaler is None or label_encoders is None:
+            missing_files = []
+            if model is None: missing_files.append("Gradient_Boosting_model.pkl")
+            if scaler is None: missing_files.append("scaler.pkl")
+            if label_encoders is None: missing_files.append("label_encoders.pkl")
+            raise FileNotFoundError(f"File berikut tidak ditemukan atau tidak dapat dibaca: {', '.join(missing_files)}")
+        
         return model, scaler, label_encoders
 
     try:
@@ -226,7 +282,27 @@ with tab2:
     # Load the CSV file
     @st.cache_data
     def load_data():
-        df = pd.read_csv('./database/bpjs antrol.csv')
+        import os
+        # Coba beberapa pendekatan untuk membaca file dataset
+        dataset_paths = [
+            './database/bpjs antrol.csv',
+            'database/bpjs antrol.csv',
+            './bpjs antrol.csv',
+            'bpjs antrol.csv'
+        ]
+        
+        df = None
+        for path in dataset_paths:
+            try:
+                if os.path.exists(path):
+                    df = pd.read_csv(path)
+                    break
+            except:
+                continue
+        
+        if df is None:
+            raise FileNotFoundError("File dataset 'bpjs antrol.csv' tidak ditemukan di lokasi yang diharapkan")
+        
         # Convert date columns to datetime if they exist
         date_columns = ['tgl_registrasi', 'tanggal_periksa']  # Common date columns in the dataset
         for col in date_columns:

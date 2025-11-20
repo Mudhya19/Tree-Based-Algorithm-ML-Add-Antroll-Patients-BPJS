@@ -6,7 +6,11 @@ Aplikasi ini memerlukan beberapa file model untuk dapat berfungsi secara penuh. 
 
 ### File yang Dibutuhkan
 
-Aplikasi ini memerlukan file-file berikut yang harus ditempatkan di folder `output/`:
+Aplikasi ini memerlukan file-file berikut. Aplikasi akan mencoba mencari file di beberapa lokasi untuk fleksibilitas deployment:
+- Model utama: `Gradient_Boosting_model.pkl` (dicari di folder `output/` dan root)
+- Scaler: `scaler.pkl` (dicari di folder `output/` dan root)
+- Label encoders: `label_encoders.pkl` (dicari di folder `output/` dan root)
+- Dataset: `bpjs antrol.csv` (dicari di folder `database/` dan root)
 
 1. `Gradient_Boosting_model.pkl` - Model machine learning utama
 2. `scaler.pkl` - Scaler untuk normalisasi data
