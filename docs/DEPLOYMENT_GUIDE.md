@@ -54,6 +54,7 @@ your-app/
 
 - Pastikan ukuran total aplikasi Anda tidak melebihi batas 100MB (dikonfigurasi di `.streamlit/config.toml`)
 - File model harus dalam format pickle (`.pkl`) yang dihasilkan dari `joblib.dump()`
+- File model harus ditempatkan di folder `output/` dan dataset di folder `database/` dengan struktur sesuai yang ditunjukkan di atas
 - Jika Anda melihat pesan "File model tidak ditemukan", berarti file-file di atas belum diunggah ke repository
 - Aplikasi tetap dapat berjalan tanpa model, tetapi hanya akan menampilkan data analisis tanpa fitur prediksi
 
