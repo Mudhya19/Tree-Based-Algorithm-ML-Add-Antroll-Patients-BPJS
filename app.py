@@ -239,7 +239,7 @@ with tab2:
     col1, col2, col3 = st.columns(3)
     col1.metric("Jumlah Baris", df.shape[0])
     col2.metric("Jumlah Kolom", df.shape[1])
-    col3.metric("Jumlah Missing Values", df.isnull().sum().sum())
+    col3.metric("Jumlah Missing Values", int(df.isnull().sum().sum()))
     
     # Date filtering
     st.subheader("Filter Berdasarkan Tanggal")
@@ -290,39 +290,44 @@ with tab2:
         filtered_df = df
         st.info("Tidak ditemukan kolom tanggal dalam dataset. Menampilkan semua data.")
     
-    # Function to clean dataframe for display in Streamlit
-    def clean_dataframe_for_display(df):
-        df_clean = df.copy()
-        # Convert all columns to string to avoid Arrow conversion issues
-        for col in df_clean.columns:
-            df_clean[col] = df_clean[col].astype(str).fillna('').replace(['<NA>', 'None', 'nan', 'NaN'], '')
-        return df_clean
+    # Fungsi clean_dataframe_for_display dihapus karena menyebabkan masalah kompatibilitas Arrow
 
     # Show data preview
     st.subheader("Pratinjau Data")
     rows_to_show = st.slider("Jumlah baris untuk ditampilkan", min_value=5, max_value=50, value=10)
     df_preview = filtered_df.head(rows_to_show).copy()
-    df_preview_clean = clean_dataframe_for_display(df_preview)
-    st.dataframe(df_preview_clean)
+    # Konversi data ke format yang kompatibel dengan Arrow
+    df_preview_arrow = df_preview.copy()
+    for col in df_preview_arrow.columns:
+        if df_preview_arrow[col].dtype == 'object':
+            df_preview_arrow[col] = df_preview_arrow[col].astype(str)
+    st.table(df_preview_arrow)
 
     # Show data types
     st.subheader("Tipe Data Kolom")
-    st.write(filtered_df.dtypes)
+    # Konversi dtypes ke format string untuk menghindari masalah Arrow
+    dtypes_str = filtered_df.dtypes.astype(str)
+    st.write(dtypes_str)
     
     # Allow user to select columns to display
     st.subheader("Filter Kolom")
     selected_columns = st.multiselect("Pilih kolom untuk ditampilkan", filtered_df.columns.tolist(), default=filtered_df.columns[:5].tolist())
     if selected_columns:
         df_selected = filtered_df[selected_columns].head(20).copy()
-        df_selected_clean = clean_dataframe_for_display(df_selected)
-        st.dataframe(df_selected_clean)
+        # Konversi data ke format yang kompatibel dengan Arrow
+        df_selected_arrow = df_selected.copy()
+        for col in df_selected_arrow.columns:
+            if df_selected_arrow[col].dtype == 'object':
+                df_selected_arrow[col] = df_selected_arrow[col].astype(str)
+        st.table(df_selected_arrow)
     
     # Show basic statistics
     st.subheader("Statistik Deskriptif")
     # Only include numeric columns for describe to avoid issues
     numeric_df = filtered_df.select_dtypes(include=[np.number])
     if not numeric_df.empty:
-        st.write(numeric_df.describe())
+        # Konversi describe ke format string untuk menghindari masalah Arrow
+        st.write(numeric_df.describe().astype(str))
     else:
         st.info("Tidak ada kolom numerik untuk ditampilkan dalam statistik deskriptif.")
     
@@ -333,4 +338,5 @@ with tab2:
     if selected_cat_col:
         st.write(f"Nilai unik pada kolom {selected_cat_col}:")
         value_counts = filtered_df[selected_cat_col].value_counts()
-        st.write(value_counts)
+        # Konversi value_counts ke format string untuk menghindari masalah Arrow
+        st.write(value_counts.astype(str))
