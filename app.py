@@ -29,20 +29,23 @@ with tab1:
         model_paths = [
             './output/Gradient_Boosting_model.pkl',
             'output/Gradient_Boosting_model.pkl',
-            './Gradient_Boosting_model.pkl',
-            'Gradient_Boosting_model.pkl'
+            '../output/Gradient_Boosting_model.pkl',
+            '../../output/Gradient_Boosting_model.pkl',
+            '../../../output/Gradient_Boosting_model.pkl'
         ]
         scaler_paths = [
             './output/scaler.pkl',
             'output/scaler.pkl',
-            './scaler.pkl',
-            'scaler.pkl'
+            '../output/scaler.pkl',
+            '../../output/scaler.pkl',
+            '../../../output/scaler.pkl'
         ]
         label_encoder_paths = [
             './output/label_encoders.pkl',
             'output/label_encoders.pkl',
-            './label_encoders.pkl',
-            'label_encoders.pkl'
+            '../output/label_encoders.pkl',
+            '../../output/label_encoders.pkl',
+            '../../../output/label_encoders.pkl'
         ]
         
         model = None
@@ -55,8 +58,8 @@ with tab1:
                 if os.path.exists(path):
                     model = joblib.load(path)
                     break
-            except:
-                continue
+            except Exception as e:
+                continue  # Lanjutkan ke path berikutnya jika terjadi error
         
         # Coba load scaler
         for path in scaler_paths:
@@ -64,8 +67,8 @@ with tab1:
                 if os.path.exists(path):
                     scaler = joblib.load(path)
                     break
-            except:
-                continue
+            except Exception as e:
+                continue  # Lanjutkan ke path berikutnya jika terjadi error
         
         # Coba load label encoders
         for path in label_encoder_paths:
@@ -73,10 +76,11 @@ with tab1:
                 if os.path.exists(path):
                     label_encoders = joblib.load(path)
                     break
-            except:
-                continue
+            except Exception as e:
+                continue  # Lanjutkan ke path berikutnya jika terjadi error
         
         if model is None or scaler is None or label_encoders is None:
+            # Tampilkan informasi debugging di lingkungan deployment
             missing_files = []
             if model is None: missing_files.append("Gradient_Boosting_model.pkl")
             if scaler is None: missing_files.append("scaler.pkl")
@@ -287,8 +291,9 @@ with tab2:
         dataset_paths = [
             './database/bpjs antrol.csv',
             'database/bpjs antrol.csv',
-            './bpjs antrol.csv',
-            'bpjs antrol.csv'
+            '../database/bpjs antrol.csv',
+            '../../database/bpjs antrol.csv',
+            '../../../database/bpjs antrol.csv'
         ]
         
         df = None
@@ -297,8 +302,8 @@ with tab2:
                 if os.path.exists(path):
                     df = pd.read_csv(path)
                     break
-            except:
-                continue
+            except Exception as e:
+                continue  # Lanjutkan ke path berikutnya jika terjadi error
         
         if df is None:
             raise FileNotFoundError("File dataset 'bpjs antrol.csv' tidak ditemukan di lokasi yang diharapkan")
