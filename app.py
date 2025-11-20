@@ -25,23 +25,29 @@ with tab1:
     @st.cache_resource
     def load_model():
         import os
-        # Coba beberapa pendekatan untuk membaca file model
+        # Coba beberapa pendekatan untuk membaca file model dengan prioritas di root folder
         model_paths = [
-            './output/Gradient_Boosting_model.pkl',
+            './Gradient_Boosting_model.pkl',  # Prioritaskan root folder
+            'Gradient_Boosting_model.pkl',
+            './output/Gradient_Boosting_model.pkl',  # Lalu coba folder output
             'output/Gradient_Boosting_model.pkl',
             '../output/Gradient_Boosting_model.pkl',
             '../../output/Gradient_Boosting_model.pkl',
             '../../../output/Gradient_Boosting_model.pkl'
         ]
         scaler_paths = [
-            './output/scaler.pkl',
+            './scaler.pkl',  # Prioritaskan root folder
+            'scaler.pkl',
+            './output/scaler.pkl',  # Lalu coba folder output
             'output/scaler.pkl',
             '../output/scaler.pkl',
             '../../output/scaler.pkl',
             '../../../output/scaler.pkl'
         ]
         label_encoder_paths = [
-            './output/label_encoders.pkl',
+            './label_encoders.pkl',  # Prioritaskan root folder
+            'label_encoders.pkl',
+            './output/label_encoders.pkl', # Lalu coba folder output
             'output/label_encoders.pkl',
             '../output/label_encoders.pkl',
             '../../output/label_encoders.pkl',
@@ -287,9 +293,11 @@ with tab2:
     @st.cache_data
     def load_data():
         import os
-        # Coba beberapa pendekatan untuk membaca file dataset
+        # Coba beberapa pendekatan untuk membaca file dataset dengan prioritas di root folder
         dataset_paths = [
-            './database/bpjs antrol.csv',
+            './bpjs antrol.csv', # Prioritaskan root folder
+            'bpjs antrol.csv',
+            './database/bpjs antrol.csv',  # Lalu coba folder database
             'database/bpjs antrol.csv',
             '../database/bpjs antrol.csv',
             '../../database/bpjs antrol.csv',
