@@ -31,12 +31,14 @@ with tab1:
 
     try:
         model, scaler, label_encoders = load_model()
+        model_loaded = True
     except FileNotFoundError:
-        st.error("File model tidak ditemukan. Pastikan file berikut telah diunggah: 'output/Gradient_Boosting_model.pkl', 'output/scaler.pkl', 'output/label_encoders.pkl'")
-        st.stop()
+        st.warning("File model tidak ditemukan. Fitur prediksi akan dinonaktifkan.")
+        st.info("Untuk menggunakan fitur prediksi, unggah file model ke folder 'output': 'Gradient_Boosting_model.pkl', 'output/scaler.pkl', 'output/label_encoders.pkl'")
+        model_loaded = False
     except Exception as e:
         st.error(f"Terjadi kesalahan saat memuat model: {str(e)}")
-        st.stop()
+        model_loaded = False
 
     # Create sidebar for input
     st.sidebar.header("Input Parameters")
@@ -110,42 +112,47 @@ with tab1:
         'hari_registrasi': [hari_registrasi]
     })
 
-    # Apply label encoding to categorical features
-    for feature in ['status_lanjut', 'kd_pj', 'png_jawab', 'jenis_kunjungan', 'nm_poli', 'USER']:
-        if feature in label_encoders:
-            try:
-                input_data[feature] = label_encoders[feature].transform(input_data[feature].astype(str))
-            except ValueError:
-                # If a new/unseen value is encountered, use the most frequent label
-                most_frequent_label = label_encoders[feature].classes_[0]
-                input_data[feature] = label_encoders[feature].transform([most_frequent_label])
+    # Apply label encoding to categorical features only if model is loaded
+    if model_loaded:
+        for feature in ['status_lanjut', 'kd_pj', 'png_jawab', 'jenis_kunjungan', 'nm_poli', 'USER']:
+            if feature in label_encoders:
+                try:
+                    input_data[feature] = label_encoders[feature].transform(input_data[feature].astype(str))
+                except ValueError:
+                    # If a new/unseen value is encountered, use the most frequent label
+                    most_frequent_label = label_encoders[feature].classes_[0]
+                    input_data[feature] = label_encoders[feature].transform([most_frequent_label])
 
     # Ensure all columns are in the correct order as expected by the model
     input_data = input_data[feature_columns]
 
-    # Scale the features
-    input_data_scaled = scaler.transform(input_data)
+    # Scale the features only if model is loaded
+    if model_loaded:
+        input_data_scaled = scaler.transform(input_data)
 
     # Prediction button
     if st.sidebar.button("Prediksi", key="predict"):
-        # Make prediction
-        with st.spinner('Sedang memproses prediksi...'):
-            prediction = model.predict(input_data_scaled)[0]
-            prediction_proba = model.predict_proba(input_data_scaled)[0]
-        
-        # Display results
-        st.subheader("Hasil Prediksi")
-        
-        if prediction == 1:
-            st.success("Prediksi: Pendaftaran Berhasil")
-            st.write("Probabilitas keberhasilan pendaftaran: {:.2%}".format(prediction_proba[1]))
+        if model_loaded:
+            # Make prediction
+            with st.spinner('Sedang memproses prediksi...'):
+                prediction = model.predict(input_data_scaled)[0]
+                prediction_proba = model.predict_proba(input_data_scaled)[0]
+            
+            # Display results
+            st.subheader("Hasil Prediksi")
+            
+            if prediction == 1:
+                st.success("Prediksi: Pendaftaran Berhasil")
+                st.write("Probabilitas keberhasilan pendaftaran: {:.2%}".format(prediction_proba[1]))
+            else:
+                st.error("Prediksi: Pendaftaran Gagal")
+                st.write("Probabilitas kegagalan pendaftaran: {:.2%}".format(prediction_proba[0]))
+            
+            st.subheader("Probabilitas Detil")
+            st.write(f"Probabilitas Pendaftaran Gagal: {prediction_proba[0]:.2%}")
+            st.write(f"Probabilitas Pendaftaran Berhasil: {prediction_proba[1]:.2%}")
         else:
-            st.error("Prediksi: Pendaftaran Gagal")
-            st.write("Probabilitas kegagalan pendaftaran: {:.2%}".format(prediction_proba[0]))
-        
-        st.subheader("Probabilitas Detil")
-        st.write(f"Probabilitas Pendaftaran Gagal: {prediction_proba[0]:.2%}")
-        st.write(f"Probabilitas Pendaftaran Berhasil: {prediction_proba[1]:.2%}")
+            st.warning("Fitur prediksi tidak tersedia karena model belum dimuat. Silakan unggah file model yang diperlukan.")
 
     # Display model information
     st.subheader("Tentang Model")
@@ -208,6 +215,9 @@ with tab1:
 
     # Display input values
     st.subheader("Parameter Input")
+    # Tampilkan input data hanya jika model tidak dimuat untuk memberikan konteks
+    if not model_loaded:
+        st.write("Parameter yang dimasukkan akan digunakan untuk prediksi ketika model telah dimuat")
     st.write(input_data)
 
 with tab2:
@@ -228,7 +238,8 @@ with tab2:
     try:
         df = load_data()
     except FileNotFoundError:
-        st.error("File dataset tidak ditemukan. Pastikan file 'bpjs antrol.csv' telah diunggah dengan benar.")
+        st.error("File dataset tidak ditemukan. Pastikan file 'bpjs antrol.csv' telah diunggah ke folder 'database'.")
+        st.info("Untuk deployment ke Streamlit Community Cloud, unggah file dataset Anda ke folder 'database' sebelum deployment.")
         st.stop()
     except Exception as e:
         st.error(f"Terjadi kesalahan saat memuat dataset: {str(e)}")
