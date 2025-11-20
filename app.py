@@ -24,9 +24,9 @@ with tab1:
     # Load model and preprocessing objects
     @st.cache_resource
     def load_model():
-        model = joblib.load('../output/Gradient_Boosting_model.pkl')
-        scaler = joblib.load('../output/scaler.pkl')
-        label_encoders = joblib.load('../output/label_encoders.pkl')
+        model = joblib.load('./output/Gradient_Boosting_model.pkl')
+        scaler = joblib.load('./output/scaler.pkl')
+        label_encoders = joblib.load('./output/label_encoders.pkl')
         return model, scaler, label_encoders
 
     try:
