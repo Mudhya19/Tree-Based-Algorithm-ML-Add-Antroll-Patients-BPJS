@@ -78,7 +78,7 @@ Kompleksitas Dataset: Dataset yang dipilih harus cukup memadai untuk menunjukkan
 proses preprocessing (idealnya memiliki campuran fitur numerik dan kategorikal)
 dan bukan dataset "mainan" yang terlalu sederhana (seperti 'Iris' atau 'Titanic' dasar).
 
-# Lakukan langkah-langkah berikut dalam sebuah notebook jupyter, tetapi fokus utama kerjakan dengan format yang sudah disediakan bpjs_add_antrol.py :
+# Lakukan langkah-langkah berikut dalam sebuah notebook jupyter, tetapi fokus utama kerjakan dengan format yang sudah disediakan colaboratory_tree_based.ipynb :
 
 1. Definisi Masalah & Pemuatan Data:
    o Jelaskan secara singkat masalah yang ingin Anda selesaikan.
@@ -108,7 +108,7 @@ dan bukan dataset "mainan" yang terlalu sederhana (seperti 'Iris' atau 'Titanic'
    scaler/encoder) ke dalam sebuah file. (Contoh: model_terbaik.pkl menggunakan
    pickle atau joblib).
 
-# buatkan notebook jupyter dengan nama bpjs_add_antrol.ipynb dalam folder notebooks dibawah ini berikan markdown berdasarkan 11 keterangan dibawah, karna ingin fokus source code lebih dulu dengan bpjs_add_antrol.py
+# buatkan notebook jupyter dengan nama colaboratory_tree_based.ipynb dalam folder notebooks dibawah ini berikan markdown berdasarkan 11 keterangan dibawah.
 
 1. Understanding Business: Memahami kebutuhan bisnis dan tujuan analisis
 2. Data Understanding: Menjelajahi dan memahami struktur data
