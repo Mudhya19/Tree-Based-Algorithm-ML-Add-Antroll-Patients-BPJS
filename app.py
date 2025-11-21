@@ -316,6 +316,14 @@ with tab2:
         if df is None:
             raise FileNotFoundError("File dataset 'bpjs antrol.csv' tidak ditemukan di lokasi yang diharapkan")
         
+        # Hapus data duplikat berdasarkan kolom no_rawat jika kolom tersebut ada
+        if 'no_rawat' in df.columns:
+            initial_count = len(df)
+            df = df.drop_duplicates(subset=['no_rawat'])
+            final_count = len(df)
+            if initial_count != final_count:
+                st.info(f"Data duplikat ditemukan dan dihapus: {initial_count - final_count} baris dihapus berdasarkan kolom 'no_rawat'")
+        
         # Convert date columns to datetime if they exist
         date_columns = ['tgl_registrasi', 'tanggal_periksa']  # Common date columns in the dataset
         for col in date_columns:
@@ -336,10 +344,15 @@ with tab2:
     
     # Display basic info about the dataset
     st.subheader("Informasi Dataset")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Jumlah Baris", df.shape[0])
     col2.metric("Jumlah Kolom", df.shape[1])
     col3.metric("Jumlah Missing Values", int(df.isnull().sum().sum()))
+    # Tampilkan jumlah data unik jika kolom no_rawat ada
+    if 'no_rawat' in df.columns:
+        col4.metric("Jumlah Data Unik (no_rawat)", df['no_rawat'].nunique())
+    else:
+        col4.metric("Kolom no_rawat", "Tidak Tersedia")
     
     # Date filtering
     st.subheader("Filter Berdasarkan Tanggal")
