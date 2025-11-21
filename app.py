@@ -9,7 +9,7 @@ from datetime import datetime
 
 # Set page configuration
 st.set_page_config(
-    page_title="Aplication Tree-Based Algorithm ML Analysis Prediction for BPJS Antrol Patients",
+    page_title="Application Tree-Based Algorithm ML Analysis Prediction for BPJS Antrol Patients",
     page_icon="🏥",
     layout="wide"
 )
@@ -19,7 +19,7 @@ tab1, tab2 = st.tabs(["Prediksi Pendaftaran", "Data Pasien"])
 
 with tab1:
     # Title
-    st.title("Aplication Tree-Based Algorithm ML Analysis Prediction for BPJS Antrol Patients")
+    st.title("Application Tree-Based Algorithm ML Analysis Prediction for BPJS Antrol Patients")
 
     # Load model and preprocessing objects
     @st.cache_resource
@@ -196,8 +196,18 @@ with tab1:
     if model_loaded:
         input_data_scaled = scaler.transform(input_data)
 
-    # Prediction button
-    if st.sidebar.button("Prediksi", key="predict"):
+    # Prediction and refresh buttons with better layout
+    st.sidebar.subheader("Aksi")
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        predict_clicked = st.button("Prediksi", key="predict", use_container_width=True)
+    with col2:
+        refresh_clicked = st.button("Refresh", key="refresh", use_container_width=True)
+    
+    if refresh_clicked:
+        st.rerun()
+    
+    if predict_clicked:
         if model_loaded:
             # Make prediction
             with st.spinner('Sedang memproses prediksi...'):
@@ -287,7 +297,7 @@ with tab1:
     st.write(input_data)
 
 with tab2:
-    st.header("Data Pasien BPJS Antrol")
+    st.header("Data Pasien BPJS")
     
     # Load the CSV file
     @st.cache_data
