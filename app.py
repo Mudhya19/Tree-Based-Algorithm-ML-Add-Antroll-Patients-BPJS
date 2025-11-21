@@ -342,24 +342,24 @@ with tab2:
         st.error(f"Terjadi kesalahan saat memuat dataset: {str(e)}")
         st.stop()
     
-    # Display basic info about the dataset
-    st.subheader("Informasi Dataset")
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Jumlah Baris", df.shape[0])
-    col2.metric("Jumlah Kolom", df.shape[1])
-    col3.metric("Jumlah Missing Values", int(df.isnull().sum().sum()))
-    # Tampilkan jumlah data unik jika kolom no_rawat ada
-    if 'no_rawat' in df.columns:
-        col4.metric("Jumlah Data Unik (no_rawat)", df['no_rawat'].nunique())
-    else:
-        col4.metric("Kolom no_rawat", "Tidak Tersedia")
-    
-    # Date filtering
-    st.subheader("Filter Berdasarkan Tanggal")
+    # Buat layout dengan expander untuk mengorganisir informasi
+    with st.expander("Informasi Dasar Dataset"):
+        # Display basic info about the dataset
+        st.subheader("Statistik Dasar Dataset")
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Jumlah Baris", df.shape[0])
+        col2.metric("Jumlah Kolom", df.shape[1])
+        col3.metric("Jumlah Missing Values", int(df.isnull().sum().sum()))
+        # Tampilkan jumlah data unik jika kolom no_rawat ada
+        if 'no_rawat' in df.columns:
+            col4.metric("Jumlah Data Unik (no_rawat)", df['no_rawat'].nunique())
+        else:
+            col4.metric("Kolom no_rawat", "Tidak Tersedia")
     
     # Identify date columns in the dataset
     date_columns = [col for col in df.columns if 'tgl' in col.lower() or 'tanggal' in col.lower() or 'date' in col.lower()]
     
+    # Inisialisasi filtered_df sebelum digunakan
     if date_columns:
         selected_date_col = st.selectbox("Pilih kolom tanggal untuk filter", date_columns)
         if selected_date_col:
@@ -403,53 +403,65 @@ with tab2:
         filtered_df = df
         st.info("Tidak ditemukan kolom tanggal dalam dataset. Menampilkan semua data.")
     
-    # Fungsi clean_dataframe_for_display dihapus karena menyebabkan masalah kompatibilitas Arrow
-
-    # Show data preview
-    st.subheader("Pratinjau Data")
-    rows_to_show = st.slider("Jumlah baris untuk ditampilkan", min_value=5, max_value=50, value=10)
-    df_preview = filtered_df.head(rows_to_show).copy()
-    # Konversi data ke format yang kompatibel dengan Arrow
-    df_preview_arrow = df_preview.copy()
-    for col in df_preview_arrow.columns:
-        if df_preview_arrow[col].dtype == 'object':
-            df_preview_arrow[col] = df_preview_arrow[col].astype(str)
-    st.table(df_preview_arrow)
-
-    # Show data types
-    st.subheader("Tipe Data Kolom")
-    # Konversi dtypes ke format string untuk menghindari masalah Arrow
-    dtypes_str = filtered_df.dtypes.astype(str)
-    st.write(dtypes_str)
+    # Tampilkan informasi tentang struktur data
+    with st.expander("Struktur Data"):
+        # Show data types
+        st.subheader("Tipe Data Kolom")
+        # Konversi dtypes ke format string untuk menghindari masalah Arrow
+        dtypes_str = filtered_df.dtypes.astype(str)
+        st.write(dtypes_str)
     
-    # Allow user to select columns to display
-    st.subheader("Filter Kolom")
-    selected_columns = st.multiselect("Pilih kolom untuk ditampilkan", filtered_df.columns.tolist(), default=filtered_df.columns[:5].tolist())
-    if selected_columns:
-        df_selected = filtered_df[selected_columns].head(20).copy()
+    # Tampilkan pratinjau data
+    with st.expander("Pratinjau Data"):
+        # Show data preview
+        st.subheader("Pratinjau Data")
+        rows_to_show = st.slider("Jumlah baris untuk ditampilkan", min_value=5, max_value=50, value=10)
+        df_preview = filtered_df.head(rows_to_show).copy()
         # Konversi data ke format yang kompatibel dengan Arrow
-        df_selected_arrow = df_selected.copy()
-        for col in df_selected_arrow.columns:
-            if df_selected_arrow[col].dtype == 'object':
-                df_selected_arrow[col] = df_selected_arrow[col].astype(str)
-        st.table(df_selected_arrow)
+        df_preview_arrow = df_preview.copy()
+        for col in df_preview_arrow.columns:
+            if df_preview_arrow[col].dtype == 'object':
+                df_preview_arrow[col] = df_preview_arrow[col].astype(str)
+        st.table(df_preview_arrow)
     
-    # Show basic statistics
-    st.subheader("Statistik Deskriptif")
-    # Only include numeric columns for describe to avoid issues
-    numeric_df = filtered_df.select_dtypes(include=[np.number])
-    if not numeric_df.empty:
-        # Konversi describe ke format string untuk menghindari masalah Arrow
-        st.write(numeric_df.describe().astype(str))
-    else:
-        st.info("Tidak ada kolom numerik untuk ditampilkan dalam statistik deskriptif.")
+    # Tampilkan filter kolom
+    with st.expander("Filter Kolom"):
+        # Allow user to select columns to display
+        st.subheader("Filter Kolom")
+        selected_columns = st.multiselect("Pilih kolom untuk ditampilkan", filtered_df.columns.tolist(), default=filtered_df.columns[:5].tolist())
+        if selected_columns:
+            df_selected = filtered_df[selected_columns].head(20).copy()
+            # Konversi data ke format yang kompatibel dengan Arrow
+            df_selected_arrow = df_selected.copy()
+            for col in df_selected_arrow.columns:
+                if df_selected_arrow[col].dtype == 'object':
+                    df_selected_arrow[col] = df_selected_arrow[col].astype(str)
+            st.table(df_selected_arrow)
     
-    # Show unique values for categorical columns
-    st.subheader("Nilai Unik pada Kolom Kategorikal")
-    categorical_columns = filtered_df.select_dtypes(include=['object']).columns.tolist()
-    selected_cat_col = st.selectbox("Pilih kolom kategorikal", categorical_columns)
-    if selected_cat_col:
-        st.write(f"Nilai unik pada kolom {selected_cat_col}:")
-        value_counts = filtered_df[selected_cat_col].value_counts()
-        # Konversi value_counts ke format string untuk menghindari masalah Arrow
-        st.write(value_counts.astype(str))
+    # Tampilkan statistik deskriptif
+    with st.expander("Statistik Deskriptif"):
+        # Show basic statistics
+        st.subheader("Statistik Deskriptif")
+        # Only include numeric columns for describe to avoid issues
+        numeric_df = filtered_df.select_dtypes(include=[np.number])
+        if not numeric_df.empty:
+            # Konversi describe ke format string untuk menghindari masalah Arrow
+            st.write(numeric_df.describe().astype(str))
+        else:
+            st.info("Tidak ada kolom numerik untuk ditampilkan dalam statistik deskriptif.")
+    
+    # Tampilkan informasi unik per kolom
+    with st.expander("Analisis Kolom Kategorikal"):
+        # Show unique values for categorical columns
+        st.subheader("Nilai Unik pada Kolom Kategorikal")
+        categorical_columns = filtered_df.select_dtypes(include=['object']).columns.tolist()
+        if categorical_columns:
+            selected_cat_col = st.selectbox("Pilih kolom kategorikal", categorical_columns)
+            if selected_cat_col:
+                st.write(f"Nilai unik pada kolom {selected_cat_col}:")
+                value_counts = filtered_df[selected_cat_col].value_counts()
+                # Konversi value_counts ke format string untuk menghindari masalah Arrow
+                st.write(value_counts.astype(str))
+        else:
+            st.info("Tidak ada kolom kategorikal dalam dataset.")
+    
